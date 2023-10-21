@@ -27,8 +27,3 @@ services:
     restart: always
     ports:
       - '20080:80'
-volumes:
-  db-data:
-    driver: local
-  grafana-data:
-    driver: local
