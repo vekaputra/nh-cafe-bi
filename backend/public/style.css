@@ -1,0 +1,22 @@
+:root {
+    --color-green: #00C9A5;
+    --color-yellow: #DAA21B;
+    --color-red: #E45780;
+}
+main { padding: 5rem 0 0.25rem; }
+form { padding: 1rem 1rem 0.5rem; }
+label, select, input { display: inline-block; }
+button { padding: 0.5rem 2rem; }
+section { margin-bottom: 0.5rem; }
+table { table-layout: fixed; width: 1080px; margin-bottom: 8rem; }
+nav { margin: 0 auto 0; }
+header { padding: 0 1rem; position: fixed; top: 0; left: 0; right: 0; background: white; text-align: center; box-shadow: 0 4px 2px -2px #ccc; }
+.ellipsis { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+button.bg-green { border-color: var(--color-green) !important; }
+.bg-green { background: var(--color-green) !important; }
+button.bg-red { border-color: var(--color-red) !important; }
+.bg-red { background: var(--color-red) !important; }
+.fixed-bottom-left { position: fixed; bottom: 1rem; left: 1rem; background: white; }

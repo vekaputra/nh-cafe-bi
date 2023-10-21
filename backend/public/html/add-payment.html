@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NHKorindo Cafe - Dashboard - Add Payment</title>
+  <link rel="stylesheet" href="http://localhost:9001/view/mvp.css">
+  <link rel="stylesheet" href="http://localhost:9001/view/style.css">
+  <style>
+    label { width: 90px; }
+    input { width: 313px; }
+    select { width: 340px; }
+    form { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+<header>
+  <nav>
+    <ul>
+      <li><a href="http://localhost:9001/view/html/upload-csv.html">Upload CSV</a></li>
+      <li><a href="http://localhost:9001/view/html/upload-approval.html">Approve Uploads</a></li>
+      <li><a href="http://localhost:9001/view/html/assign-referral.html">Assign Referral</a></li>
+      <li><a href="http://localhost:9001/view/html/add-payment.html">Add Payment</a></li>
+    </ul>
+  </nav>
+</header>
+<main>
+  <section>
+    <form id="form" action="http://localhost:9001/v1/add-payment" enctype="multipart/form-data">
+      <div>
+        <label for="branch_id">Branch:</label>
+        <select id="branch_id" name="branch_id"></select>
+      </div>
+      <div>
+        <label for="date">Date:</label>
+        <select id="date" name="date"></select>
+      </div>
+      <div>
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" value="0"/>
+      </div>
+      <div class="text-center">
+        <button>Submit</button>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+  let form = document.querySelector("#form");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const url = form.action;
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          branch_id: parseInt(formData.get('branch_id')),
+          payment_date: formData.get('date'),
+          amount: parseInt(formData.get('amount'))
+        })
+      });
+      const result = await response.json();
+
+      window.alert(`${response.status} - ${result.message}`);
+    } catch (error) {
+      window.alert(error);
+    }
+  }
+
+  function render(data) {
+    let branchSelect = document.querySelector(`#branch_id`);
+    let dateSelect = document.querySelector(`#date`);
+
+    branchSelect.innerHTML = ``;
+    dateSelect.innerHTML = ``;
+    for (const branch of data['branches']) {
+      branchSelect.innerHTML += `<option value="${branch['id']}">${branch['branch_code']} - ${branch['short_name']}</option>`
+    }
+    for (const date of data['transaction_dates']) {
+      const dt = new Date(date);
+      const valueDate = dt.toLocaleString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit'});
+      const formattedDate = dt.toLocaleString('default', { month: 'long', year: 'numeric' });
+      dateSelect.innerHTML += `<option value="${valueDate}">${formattedDate}</option>`
+    }
+  }
+
+  fetch("http://localhost:9001/v1/info").then(response => response.json()).then(data => render(data));
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NHKorindo Cafe - Dashboard - Approve Upload</title>
+    <link rel="stylesheet" href="http://localhost:9001/view/mvp.css">
+    <link rel="stylesheet" href="http://localhost:9001/view/style.css">
+    <style>
+        label { width: 120px; }
+        button { padding: 0.25rem 2rem; }
+        select { margin-bottom: 0.25rem; }
+        .ellipsis { width: 220px; }
+        .pad-header { padding: 0 0 1rem; }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="http://localhost:9001/view/html/upload-csv.html">Upload CSV</a></li>
+            <li><a href="http://localhost:9001/view/html/upload-approval.html">Approve Uploads</a></li>
+            <li><a href="http://localhost:9001/view/html/assign-referral.html">Assign Referral</a></li>
+            <li><a href="http://localhost:9001/view/html/add-payment.html">Add Payment</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <section>
+        <form id="form" class="fixed-bottom-left">
+            <div class="text-center">
+                <select id="file-name"></select>
+            </div>
+            <div class="text-center">
+                <button class="bg-green" onclick="approveUpload()">Approve</button>
+                <button class="bg-red" onclick="rejectUpload()">Reject</button>
+            </div>
+        </form>
+    </section>
+    <section>
+        <div class="pad-header">
+            <span>Transaction Date: </span>
+            <span id="transaction-date">xxxx-xx-xx</span>
+            <span>| Branch: </span>
+            <span id="branch">xxxxx - xxxxxx</span>
+        </div>
+        <table>
+            <colgroup>
+                <col style="width:85px"/>
+                <col style="width:245px"/>
+                <col style="width:170px"/>
+                <col style="width:170px"/>
+                <col style="width:130px"/>
+                <col style="width:130px"/>
+                <col style="width:150px"/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th>User ID</th>
+                <th class="text-left">Name</th>
+                <th class="text-right">Buy Amount</th>
+                <th class="text-right">Sell Amount</th>
+                <th class="text-right">Buy Fee</th>
+                <th class="text-right">Sell Fee</th>
+                <th class="text-right">Total Fee</th>
+            </tr>
+            </thead>
+            <tbody id="transaction"></tbody>
+        </table>
+    </section>
+</main>
+<script>
+    let dataCache = [];
+    let branchCache = [];
+    let fileSelect = document.querySelector(`#file-name`);
+    fileSelect.onchange = async (e) => {
+        renderTable(fileSelect.value);
+    }
+    let form = document.querySelector("#form");
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+    }
+
+    function approveUpload() {
+        if (fileSelect.value === '-1') {
+            window.alert("please choose uploaded file first");
+            return
+        }
+        fetch("/v1/file-upload/confirm",
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({file_upload_id: parseInt(fileSelect.value), action: 'approve'})
+            })
+            .then(response => response.json())
+            .then((data) => {
+                refresh();
+                window.alert(data.message);
+            });
+    }
+
+    function rejectUpload() {
+        if (fileSelect.value === '-1') {
+            window.alert("please choose uploaded file first");
+            return
+        }
+        fetch("/v1/file-upload/confirm",
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({file_upload_id: parseInt(fileSelect.value), action: 'delete'})
+            })
+            .then(response => response.json())
+            .then((data) => {
+                refresh();
+                window.alert(data.message);
+            });
+    }
+
+    function renderTable(id) {
+        let txDate = document.querySelector(`#transaction-date`);
+        let branchText = document.querySelector(`#branch`);
+        let txBody = document.querySelector(`#transaction`);
+
+        txBody.innerHTML = ``;
+        txDate.innerHTML = `xxxx-xx-xx`;
+        branchText.innerHTML = `xxxxx - xxxxxx`;
+
+        if (id === -1) {
+            return
+        }
+
+        const data = dataCache[id]['json'];
+        const branch = branchCache[data['branch_id']];
+
+        txDate.innerHTML = data['date'];
+        branchText.innerHTML = `${branch['branch_code']} - ${branch['short_name']}`;
+
+        for (const row of data['transactions']) {
+            txBody.innerHTML += `<tr>
+    <td class="text-left">${row['customer_code']}</td>
+    <td class="text-left"><div class="ellipsis">${row['customer_name']}</div></td>
+    <td class="text-right">${numberWithCommas(row['buy_amount'])}</td>
+    <td class="text-right">${numberWithCommas(row['sell_amount'])}</td>
+    <td class="text-right">${numberWithCommas(row['buy_fee'])}</td>
+    <td class="text-right">${numberWithCommas(row['sell_fee'])}</td>
+    <td class="text-right">${numberWithCommas(row['total_fee'])}</td>
+</tr>`;
+        }
+    }
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function renderSelect(data) {
+        fileSelect.innerHTML = `<option value="-1">Choose Uploaded File</option>`;
+        for (const row of data) {
+            fileSelect.innerHTML += `<option value="${row['id']}">${row['file_name']}</option>`;
+        }
+    }
+
+    function render(data) {
+        for (const row of data) {
+            dataCache[row['id']] = row;
+        }
+
+        renderSelect(data);
+        setTimeout(function () {
+            renderTable(fileSelect.options[fileSelect.selectedIndex].value)
+        }, 200);
+    }
+
+    function storeInfo(data) {
+        branchCache = [];
+        for (const row of data['branches']) {
+            branchCache[row['id']] = row;
+        }
+    }
+
+    function refresh() {
+        fetch("http://localhost:9001/v1/file-upload").then(response => response.json()).then(data => render(data));
+    }
+
+    fetch("http://localhost:9001/v1/info").then(response => response.json()).then(data => storeInfo(data));
+    refresh();
+</script>
+</body>
+</html>
