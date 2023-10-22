@@ -30,3 +30,9 @@ services:
       PMA_ABSOLUTE_URI: https://nhcafe-pma.ashiwawa.com
     ports:
       - '20080:80'
+  nhcafe-bo:
+    image: nhcafe-bo
+    container_name: nhcafe_bo
+    restart: always
+    ports:
+      - '29001:9001'
