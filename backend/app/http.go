@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -11,10 +10,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/html"
-	"github.com/tdewolff/minify/js"
 )
 
 const (
@@ -77,27 +72,13 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var b bytes.Buffer
-	err = tmpl.Execute(&b, struct {
+	err = tmpl.Execute(w, struct {
 		BaseURL string
 	}{BaseURL: Config().BaseURL})
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
-	m := minify.New()
-	m.AddFunc(Html, html.Minify)
-	m.AddFunc(Html, css.Minify)
-	m.AddFunc(Html, js.Minify)
-
-	mb, err := m.Bytes(Html, b.Bytes())
-	if err != nil {
-		ReturnMessage(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	ReturnRaw(w, mb, http.StatusOK)
 }
 
 func ReturnRaw(w http.ResponseWriter, raw []byte, statusCode int) {
