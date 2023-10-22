@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/js"
-
-	"github.com/tdewolff/minify/html"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
 )
 
 const (
@@ -52,8 +50,8 @@ func Serve() {
 	})
 
 	fs := http.FileServer(http.Dir("public"))
-	r.HandleFunc("/view/html", ForbiddenHandler)
-	r.HandleFunc("/view/tmpl", ForbiddenHandler)
+	r.HandleFunc("/view/html/*", ForbiddenHandler)
+	r.HandleFunc("/view/tmpl/*", ForbiddenHandler)
 	r.Handle("/view/*", http.StripPrefix("/view/", fs))
 
 	log.Printf("running http server on %s\n", Config().HTTPPort)
