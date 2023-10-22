@@ -13,10 +13,10 @@ services:
     container_name: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${NH_MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: nh-cafe
-      MYSQL_USER: user
-      MYSQL_PASSWORD: user
+      MYSQL_USER: ${NH_MYSQL_USER}
+      MYSQL_PASSWORD: ${NH_MYSQL_PASSWORD}
     ports:
       - '23306:3306'
     volumes:

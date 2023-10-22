@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NHKorindo Cafe - Dashboard - Assign Referral</title>
+    <link rel="stylesheet" href="{{.BaseURL}}/view/mvp.css">
+    <link rel="stylesheet" href="{{.BaseURL}}/view/style.css">
+    <style>
+        button {
+            padding: 0.25rem 2rem;
+        }
+
+        select {
+            margin-bottom: 0.25rem;
+        }
+
+        table {
+            margin-top: 0.5rem;
+        }
+
+        .ellipsis {
+            width: 220px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="{{.BaseURL}}/page/upload-csv">Upload CSV</a></li>
+            <li><a href="{{.BaseURL}}/page/upload-approval">Approve Uploads</a></li>
+            <li><a href="{{.BaseURL}}/page/assign-referral">Assign Referral</a></li>
+            <li><a href="{{.BaseURL}}/page/add-payment">Add Payment</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <section>
+        <form id="form" class="fixed-bottom-left">
+            <div class="text-center">
+                <div><label>Assign Referral:</label></div>
+                <button class="bg-green" onclick="submitReferral()">Submit</button>
+                <button class="bg-red" onclick="refresh(false)">Reset</button>
+            </div>
+        </form>
+    </section>
+    <section>
+        <table>
+            <colgroup>
+                <col style="width:140px"/>
+                <col style="width:260px"/>
+                <col style="width:140px"/>
+                <col style="width:170px"/>
+                <col style="width:170px"/>
+                <col style="width:200px"/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th class="text-left">User ID</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Branch Code</th>
+                <th class="text-left">Branch Name</th>
+                <th class="text-left">Tx Date</th>
+                <th class="text-left">Referral</th>
+            </tr>
+            </thead>
+            <tbody id="free-customer"></tbody>
+        </table>
+    </section>
+</main>
+<script>
+    let dataCache = [];
+    let branchCache = [];
+    let branchReferralFeeCache = [];
+    let branchReferralFeeSelect = [];
+    let form = document.querySelector("#form");
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+    }
+
+    function submitReferral() {
+        let payload = [...document.querySelectorAll("select")].map((e) => {
+            let id = e.getAttribute('id').split('_');
+            return {
+                'customer_id': parseInt(id[1]),
+                'transaction_date': id[2],
+                'referral_fee_id': parseInt(e.value),
+            };
+        });
+
+        fetch("/v1/assign-referral",
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then((data) => {
+                refresh(true);
+                window.alert(data.message);
+            });
+    }
+
+    function render(data) {
+        dataCache = data;
+
+        let txBody = document.querySelector(`#free-customer`);
+        txBody.innerHTML = ``;
+        for (const row of data) {
+            const dt = new Date(row['transaction_date']);
+            const formattedDate = dt.toLocaleString('default', {month: 'long', year: 'numeric'});
+            const idDate = dt.toLocaleString('en-CA', {year: 'numeric', month: '2-digit', day: '2-digit'});
+            const rowID = `${row['customer_id']}_${idDate}`;
+            const referralFeeSelect = branchReferralFeeSelect[row['branch_id']].replace('{id}', rowID);
+            txBody.innerHTML += `<tr>
+    <td class="text-left">${row['customer_code']}</td>
+    <td class="text-left"><div class="ellipsis">${row['customer_name']}</div></td>
+    <td class="text-left">${row['branch_code']}</td>
+    <td class="text-left">${row['branch_short_name']}</td>
+    <td class="text-left">${formattedDate}</td>
+    <td class="text-left">${referralFeeSelect}</td>
+</tr>`;
+        }
+    }
+
+    function storeInfo(data) {
+        branchCache = [];
+        branchReferralFeeCache = [];
+        for (const row of data['branches']) {
+            branchCache[row['id']] = row;
+        }
+        for (const row of data['referral_fees']) {
+            if (branchReferralFeeCache[row['branch_id']] == null) {
+                branchReferralFeeCache[row['branch_id']] = [];
+            }
+            branchReferralFeeCache[row['branch_id']].push(row);
+        }
+        for (const [branchID, referralFees] of Object.entries(branchReferralFeeCache)) {
+            branchReferralFeeSelect[branchID] = `<select id="ref_{id}"><option value="-1">NO REFERRAL</option>`;
+            for (const referralFee of referralFees) {
+                branchReferralFeeSelect[branchID] += `<option value="${referralFee['id']}">${referralFee['display_code']} - ${referralFee['sharing_fee']}</option>`
+            }
+            branchReferralFeeSelect[branchID] += `</select>`
+        }
+    }
+
+    function refresh(isFetch) {
+        if (!isFetch) {
+            render(dataCache);
+            return;
+        }
+
+        fetch("{{.BaseURL}}/v1/free-customers")
+            .then(response => response.json())
+            .then(data => setTimeout(function () {
+                render(data);
+            }, 200));
+    }
+
+    fetch("{{.BaseURL}}/v1/info").then(response => response.json()).then(data => storeInfo(data));
+    refresh(true);
+</script>
+</body>
+</html>
