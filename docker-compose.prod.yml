@@ -17,13 +17,16 @@ services:
       MYSQL_DATABASE: nh-cafe
       MYSQL_USER: ${NH_MYSQL_USER}
       MYSQL_PASSWORD: ${NH_MYSQL_PASSWORD}
-    ports:
-      - '23306:3306'
+    # ports:
+    #   - '23306:3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
   phpmyadmin:
     image: phpmyadmin
     container_name: phpmyadmin
     restart: always
+    environment:
+      PMA_HOST: mariadb
+      PMA_ABSOLUTE_URI: https://nhcafe-pma.ashiwawa.com
     ports:
       - '20080:80'
