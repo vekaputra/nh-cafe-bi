@@ -23,7 +23,7 @@ ORDER BY c.customer_code ASC;`
 func GetFreeCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	db := GetDB()
 
-	var freeCustomers []FreeCustomer
+	freeCustomers := []FreeCustomer{}
 	err := db.Select(&freeCustomers, getFreeCustomerQuery)
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusInternalServerError)

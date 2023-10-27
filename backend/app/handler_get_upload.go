@@ -9,7 +9,7 @@ const (
 func GetUploadHandler(w http.ResponseWriter, r *http.Request) {
 	db := GetDB()
 
-	var response []FileUpload
+	response := []FileUpload{}
 	err := db.Select(&response, getNonApprovedUploadQuery)
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusInternalServerError)

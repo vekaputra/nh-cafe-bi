@@ -57,7 +57,7 @@ func ConfirmUploadHandler(w http.ResponseWriter, r *http.Request) {
 			questionStatement = fmt.Sprintf("%s, ?", questionStatement)
 		}
 
-		var customers []Customer
+		customers := []Customer{}
 		getCustomerQuery := strings.ReplaceAll(getCustomerBaseQuery, "<?>", questionStatement)
 		err = db.Select(&customers, getCustomerQuery, activeCustomers...)
 		if err != nil {
