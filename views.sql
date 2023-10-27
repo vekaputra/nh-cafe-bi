@@ -48,7 +48,7 @@ SELECT
     FLOOR(mt.total_fee * rfr.sharing_fee / 100) as gross_referral_fee,
     FLOOR(fn_tax_percent(mt.transaction_date, mt.branch_id) * FLOOR(mt.total_fee * b.sharing_fee / 100)) as shared_tax,
     FLOOR(rfr.sharing_tax * fn_tax_percent(mt.transaction_date, mt.branch_id) * FLOOR(mt.total_fee * b.sharing_fee / 100)) as tax,
-    FLOOR(mt.total_fee * rfr.sharing_fee / 100) - FLOOR(rfr.sharing_tax * fn_tax_percent(mt.transaction_date, mt.branch_id) *  FLOOR(mt.total_fee * b.sharing_fee / 100)) as nett_referral_fee,
+    GREATEST(FLOOR(mt.total_fee * rfr.sharing_fee / 100) - FLOOR(rfr.sharing_tax * fn_tax_percent(mt.transaction_date, mt.branch_id) *  FLOOR(mt.total_fee * b.sharing_fee / 100)), 0) as nett_referral_fee,
     mt.transaction_date
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
