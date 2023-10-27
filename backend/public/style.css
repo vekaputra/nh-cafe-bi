@@ -3,6 +3,7 @@
     --color-yellow: #DAA21B;
     --color-red: #E45780;
 }
+body { overflow-y: scroll; }
 main { padding: 5rem 0 0.25rem; }
 form { padding: 1rem 1rem 0.5rem; }
 label, select, input { display: inline-block; }

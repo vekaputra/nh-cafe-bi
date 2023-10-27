@@ -5,9 +5,15 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-     - '23000:3000'
+      - '23000:3000'
     volumes:
-     - ./data/grafana:/var/lib/grafana
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      - GF_LIVE_MAX_CONNECTIONS=0
+    deploy:
+      resources:
+        limits:
+          memory: 256M
   mariadb:
     image: mariadb:11.1.2
     container_name: mariadb
@@ -16,6 +22,10 @@ services:
       MYSQL_DATABASE: nh-cafe
     volumes:
       - ./data/mysql:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 256M
   phpmyadmin:
     image: phpmyadmin:5.2.1
     container_name: phpmyadmin
@@ -25,9 +35,17 @@ services:
       PMA_ABSOLUTE_URI: https://nhcafe-pma.ashiwawa.com
     ports:
       - '20080:80'
+    deploy:
+      resources:
+        limits:
+          memory: 128M
   nhcafe-bo:
     image: nhcafe-bo
     container_name: nhcafe_bo
     restart: always
     ports:
       - '29001:9001'
+    deploy:
+      resources:
+        limits:
+          memory: 64M
