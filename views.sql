@@ -31,6 +31,16 @@ CREATE OR REPLACE VIEW referral_fee_recursives AS
 -- VIEW QUERY referral_transactions
 
 CREATE OR REPLACE VIEW referral_transactions AS
+WITH mtf AS (
+    SELECT
+        mp.amount / (mp.nett_rate * SUM(mt.total_fee)) as fee_modifier,
+        (1-mp.nett_rate) as tax_rate,
+        mt.transaction_date,
+        mt.branch_id
+    FROM monthly_transactions mt
+        JOIN monthly_payments mp ON mp.branch_id = mt.branch_id AND mp.payment_date = mt.transaction_date
+    GROUP BY mt.transaction_date, mt.branch_id
+)
 SELECT
     rfr.root_id,
     rfr.referral_fee_id,
@@ -44,17 +54,18 @@ SELECT
     mt.buy_amount,
     mt.sell_amount,
     mt.total_fee,
-    FLOOR(mt.total_fee * b.sharing_fee / 100) as gross_shared_fee,
-    FLOOR(mt.total_fee * rfr.sharing_fee / 100) as gross_referral_fee,
-    FLOOR(fn_tax_percent(mt.transaction_date, mt.branch_id) * FLOOR(mt.total_fee * b.sharing_fee / 100)) as shared_tax,
-    FLOOR(rfr.sharing_tax * fn_tax_percent(mt.transaction_date, mt.branch_id) * FLOOR(mt.total_fee * b.sharing_fee / 100)) as tax,
-    GREATEST(FLOOR(mt.total_fee * rfr.sharing_fee / 100) - FLOOR(rfr.sharing_tax * fn_tax_percent(mt.transaction_date, mt.branch_id) *  FLOOR(mt.total_fee * b.sharing_fee / 100)), 0) as nett_referral_fee,
+    FLOOR(mt.total_fee * mtf.fee_modifier) as gross_shared_fee,
+    FLOOR(mt.total_fee * mtf.fee_modifier * (rfr.sharing_fee / b.sharing_fee)) as gross_referral_fee,
+    FLOOR(mt.total_fee * mtf.fee_modifier * mtf.tax_rate) as shared_tax,
+    FLOOR(mt.total_fee * mtf.fee_modifier * mtf.tax_rate * rfr.sharing_tax) as tax,
+    GREATEST(FLOOR(mt.total_fee * mtf.fee_modifier * ((rfr.sharing_fee / b.sharing_fee) - (mtf.tax_rate * rfr.sharing_tax))), 0) as nett_referral_fee,
     mt.transaction_date
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
          JOIN customers c ON mt.customer_id = c.id
          JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date
          JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id
+         JOIN mtf ON mtf.branch_id = mt.branch_id AND mtf.transaction_date = mt.transaction_date
 ORDER BY mt.transaction_date, c.customer_code ASC;
 
 -- monthly_customer_referral_mappings
@@ -71,3 +82,9 @@ FROM monthly_transaction_dates mtd
               )
          JOIN referral_fees rf ON rf.id = crm.referral_fee_id;
 WHERE crm.customer_id = 1;
+
+---
+
+SELECT (1 - (SUM(amount)/SUM(amount/tax_rate)))*100 as tax_rate FROM monthly_payments mp
+WHERE mp.branch_id IN (SELECT id FROM branches WHERE branch_code IN ($branch_code))
+  AND mp.payment_date IN ($transaction_date)
