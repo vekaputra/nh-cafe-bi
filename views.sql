@@ -63,8 +63,8 @@ SELECT
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
          JOIN customers c ON mt.customer_id = c.id
-         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date
-         JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id
+         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date AND mcrm.branch_id = mt.branch_id
+         JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id AND rfr.branch_id = mt.branch_id
          JOIN mtf ON mtf.branch_id = mt.branch_id AND mtf.transaction_date = mt.transaction_date
 ORDER BY mt.transaction_date, c.customer_code ASC;
 
