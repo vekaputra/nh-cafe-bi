@@ -160,8 +160,7 @@
             }, 200));
     }
 
-    fetch("{{.BaseURL}}/v1/info").then(response => response.json()).then(data => storeInfo(data));
-    refresh(true);
+    fetch("{{.BaseURL}}/v1/info").then(response => response.json()).then(data => storeInfo(data)).then(e => refresh(true));
 </script>
 </body>
 </html>
