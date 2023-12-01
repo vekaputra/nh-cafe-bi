@@ -1,0 +1,89 @@
+<mjml>
+<mj-head>
+    <mj-breakpoint width="480px"/>
+  	<mj-style>
+        @media (max-width:480px) {
+            td[align="right"] { text-align: left; }
+        }
+        h1.otp { letter-spacing: 8px; }
+        div.social a { margin-right: 8px; }
+  	</mj-style>
+</mj-head>
+<mj-body background-color="white" width="800px">
+    <!-- top bar -->
+    <mj-section padding="10px 0">
+        <mj-group>
+            <mj-column background-color="#246fb7" padding="11px"></mj-column>
+            <mj-column background-color="#fab514" padding="11px"></mj-column>
+        </mj-group>
+    </mj-section>
+
+    <!-- logo section -->
+    <mj-section padding="10px 0">
+        <mj-column>
+            <mj-image align="left" width="79px" src="https://www.ashiwawa.com/naik-logo.png"/>
+        </mj-column>
+        <mj-column>
+            <mj-image align="right" width="197px" src="https://www.ashiwawa.com/nh-logo.png"/>
+        </mj-column>
+    </mj-section>
+
+    <!-- content -->
+    <mj-section padding="10px 0">
+        <mj-column>
+            <mj-text color="#2f2f2f">
+                <h3>Hello, Sarah****!</h3>
+            </mj-text>
+            <mj-text color="#545454" line-height="2">
+                We've received an OTP request from your NAIK Apps Account.<br/>
+                Please input 6 digit code below to authenticate your account &amp; do the action you desire.
+            </mj-text>
+            <mj-text color="#1d1d1d">
+                <h1 class="otp">316452</h1>
+            </mj-text>
+            <mj-text color="#545454" line-height="1.25">
+                * This code is confidential, please do not share this code with anyone<br/>
+                * This OTP will expire in 1 minute<br/>
+                * If you didn't make this request, you may ignore this email or contact our Customer Service <a href="tel:+622150889102">(021) 5088 9102</a> on Monday - Friday, 09.00 - 16.00 WIB or email us at <a href="mailto:cso@nhsec.co.id">cso@nhsec.co.id</a><br/>
+                * This email has been generated automatically, please don't reply
+            </mj-text>
+        </mj-column>
+    </mj-section>
+
+    <mj-section padding="0">
+        <mj-column>
+            <mj-divider border-width="1px" border-color="lightgrey">
+        </mj-column>
+    </mj-section>
+
+    <mj-section padding="0 0 10px">
+        <mj-column>
+            <mj-text color="#545454">
+                <h4>Get Our Apps Here</h4>
+                <div class="social">
+                    <a href="https://apps.apple.com/id/app/naik-mobile-ver-2-0/id1223931836?l=id?l=id"><img src="https://www.ashiwawa.com/app-store.png"/></a>
+                    <a href="https://play.google.com/store/apps/details?id=com.nhkorindo.mts&hl=in&pli=1"><img src="https://www.ashiwawa.com/google-play.png"/></a>
+                </div>
+            </mj-text>
+        </mj-column>
+        <mj-column>
+            <mj-text color="#545454">
+                <h4>Follow Us On</h4>
+                <div class="social">
+                    <a href="https://www.nhis.co.id/"><img width="32px" src="https://www.ashiwawa.com/web-logo.png"/></a>
+                    <a href="https://www.instagram.com/nhsekuritas/?hl=en"><img width="32px" src="https://www.ashiwawa.com/ig.png"/></a>
+                    <a href="https://www.youtube.com/channel/UCzed08Kh1J5agDdAhIHhlXg"><img width="32px" src="https://www.ashiwawa.com/yt-logo.png"/></a>
+                </div>
+            </mj-text>
+        </mj-column>
+    </mj-section>
+
+    <!-- bottom bar -->
+    <mj-section>
+        <mj-group>
+            <mj-column background-color="#fab514" padding="11px"></mj-column>
+            <mj-column background-color="#246fb7" padding="11px"></mj-column>
+        </mj-group>
+    </mj-section>
+</mj-body>
+</mjml>

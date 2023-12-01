@@ -33,12 +33,12 @@ CREATE OR REPLACE VIEW referral_fee_recursives AS
 CREATE OR REPLACE VIEW referral_transactions AS
 WITH mtf AS (
     SELECT
-        mp.amount / (mp.nett_rate * SUM(mt.total_fee)) as fee_modifier,
-        (1-mp.nett_rate) as tax_rate,
+        ROUND(mp.amount / (mp.nett_rate * SUM(mt.total_fee)), 6) as fee_modifier,
+        ROUND(1-mp.nett_rate, 6) as tax_rate,
         mt.transaction_date,
         mt.branch_id
     FROM monthly_transactions mt
-        JOIN monthly_payments mp ON mp.branch_id = mt.branch_id AND mp.payment_date = mt.transaction_date
+        LEFT JOIN monthly_payments mp ON mp.branch_id = mt.branch_id AND mp.payment_date = mt.transaction_date
     GROUP BY mt.transaction_date, mt.branch_id
 )
 SELECT
@@ -63,8 +63,8 @@ SELECT
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
          JOIN customers c ON mt.customer_id = c.id
-         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date AND mcrm.branch_id = mt.branch_id
-         JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id AND rfr.branch_id = mt.branch_id
+         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date
+         JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id
          JOIN mtf ON mtf.branch_id = mt.branch_id AND mtf.transaction_date = mt.transaction_date
 ORDER BY mt.transaction_date, c.customer_code ASC;
 
@@ -74,14 +74,15 @@ CREATE OR REPLACE VIEW monthly_customer_referral_mappings AS
 SELECT mtd.transaction_date as transaction_date, crm.*, rf.branch_id
 FROM monthly_transaction_dates mtd
          JOIN customer_referral_mappings crm
-              ON crm.assigned_at <= mtd.transaction_date AND crm.id IN (
-                  SELECT max(crm1.id)
+              ON crm.assigned_at <= mtd.transaction_date AND crm.id = (
+                  SELECT crm1.id
                   FROM customer_referral_mappings crm1 JOIN referral_fees rf1 on crm1.referral_fee_id = rf1.id
                   WHERE crm.customer_id = crm1.customer_id and crm1.assigned_at <= mtd.transaction_date
-                  GROUP BY rf1.branch_id
-              )
-         JOIN referral_fees rf ON rf.id = crm.referral_fee_id;
-WHERE crm.customer_id = 1;
+                  ORDER BY crm1.assigned_at DESC
+                  LIMIT 1
+    )
+    JOIN referral_fees rf ON rf.id = crm.referral_fee_id
+WHERE crm.customer_id = 433;
 
 ---
 
