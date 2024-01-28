@@ -1,6 +1,8 @@
 package app
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	getBranchQuery      = `SELECT id, branch_code, short_name, name, sharing_fee, created_at FROM branches WHERE branch_code NOT IN ('00000') AND is_active = 1 ORDER BY branch_code ASC;`

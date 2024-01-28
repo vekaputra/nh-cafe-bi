@@ -63,7 +63,7 @@ SELECT
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
          JOIN customers c ON mt.customer_id = c.id
-         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date
+         JOIN monthly_customer_referral_mappings mcrm ON mcrm.customer_id = mt.customer_id AND mcrm.transaction_date = mt.transaction_date AND mcrm.branch_id = mt.branch_id
          JOIN referral_fee_recursives rfr ON mcrm.referral_fee_id = rfr.root_id
          JOIN mtf ON mtf.branch_id = mt.branch_id AND mtf.transaction_date = mt.transaction_date
 ORDER BY mt.transaction_date, c.customer_code ASC;
@@ -71,19 +71,22 @@ ORDER BY mt.transaction_date, c.customer_code ASC;
 -- monthly_customer_referral_mappings
 
 CREATE OR REPLACE VIEW monthly_customer_referral_mappings AS
-SELECT mtd.transaction_date as transaction_date, crm.*, rf.branch_id
-FROM monthly_transaction_dates mtd
-         JOIN customer_referral_mappings crm
-              ON crm.assigned_at <= mtd.transaction_date AND crm.id = (
-                  SELECT crm1.id
-                  FROM customer_referral_mappings crm1 JOIN referral_fees rf1 on crm1.referral_fee_id = rf1.id
-                  WHERE crm.customer_id = crm1.customer_id and crm1.assigned_at <= mtd.transaction_date
-                  ORDER BY crm1.assigned_at DESC
-                  LIMIT 1
-    )
-    JOIN referral_fees rf ON rf.id = crm.referral_fee_id
-WHERE crm.customer_id = 433;
+SELECT mt.transaction_date, crm.customer_id, crm.referral_fee_id, crm.assigned_at, crm.branch_id
+FROM monthly_transactions mt JOIN (
+  SELECT c1.customer_id, c1.referral_fee_id, c1.assigned_at, r1.branch_id 
+  FROM customer_referral_mappings c1 JOIN referral_fees r1 ON c1.referral_fee_id = r1.id) crm 
+  	ON mt.customer_id = crm.customer_id AND mt.branch_id = crm.branch_id 
+WHERE crm.assigned_at = (
+        SELECT c2.assigned_at 
+        FROM customer_referral_mappings c2 JOIN referral_fees r2 ON c2.referral_fee_id = r2.id
+        WHERE c2.customer_id = mt.customer_id AND r2.branch_id = mt.branch_id AND c2.assigned_at <= mt.transaction_date
+        ORDER BY c2.assigned_at DESC LIMIT 1)
+ORDER BY transaction_date;
 
+SELECT c2.assigned_at 
+        FROM customer_referral_mappings c2 JOIN referral_fees r2 ON c2.referral_fee_id = r2.id
+        WHERE c2.customer_id = 176 AND c2.assigned_at <= '2023-08-01' AND r2.branch_id = 5
+        ORDER BY c2.assigned_at DESC;
 ---
 
 SELECT (1 - (SUM(amount)/SUM(amount/tax_rate)))*100 as tax_rate FROM monthly_payments mp
