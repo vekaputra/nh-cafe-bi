@@ -71,7 +71,7 @@ ORDER BY mt.transaction_date, c.customer_code ASC;
 -- monthly_customer_referral_mappings
 
 CREATE OR REPLACE VIEW monthly_customer_referral_mappings AS
-SELECT mt.transaction_date, crm.customer_id, crm.referral_fee_id, crm.assigned_at, crm.branch_id
+SELECT DISTINCT mt.transaction_date, crm.customer_id, crm.referral_fee_id, crm.assigned_at, crm.branch_id
 FROM monthly_transactions mt JOIN (
   SELECT c1.customer_id, c1.referral_fee_id, c1.assigned_at, r1.branch_id 
   FROM customer_referral_mappings c1 JOIN referral_fees r1 ON c1.referral_fee_id = r1.id) crm 
@@ -82,6 +82,8 @@ WHERE crm.assigned_at = (
         WHERE c2.customer_id = mt.customer_id AND r2.branch_id = mt.branch_id AND c2.assigned_at <= mt.transaction_date
         ORDER BY c2.assigned_at DESC LIMIT 1)
 ORDER BY transaction_date;
+
+---
 
 SELECT c2.assigned_at 
         FROM customer_referral_mappings c2 JOIN referral_fees r2 ON c2.referral_fee_id = r2.id
