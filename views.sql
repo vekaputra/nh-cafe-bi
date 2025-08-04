@@ -55,10 +55,10 @@ SELECT
     mt.sell_amount,
     mt.total_fee,
     ROUND(mt.total_fee * mtf.fee_modifier) as gross_shared_fee,
-    ROUND(mt.total_fee * mtf.fee_modifier * (rfr.sharing_fee / b.sharing_fee)) as gross_referral_fee,
+    ROUND(mt.total_fee * mtf.fee_modifier * (rfr.sharing_fee / rfr.total_sharing_fee)) as gross_referral_fee,
     ROUND(mt.total_fee * mtf.fee_modifier * mtf.tax_rate) as shared_tax,
     ROUND(mt.total_fee * mtf.fee_modifier * mtf.tax_rate * rfr.sharing_tax) as tax,
-    GREATEST(ROUND(mt.total_fee * mtf.fee_modifier * ((rfr.sharing_fee / b.sharing_fee) - (mtf.tax_rate * rfr.sharing_tax))), 0) as nett_referral_fee,
+    GREATEST(ROUND(mt.total_fee * mtf.fee_modifier * ((rfr.sharing_fee / rfr.total_sharing_fee) - (mtf.tax_rate * rfr.sharing_tax))), 0) as nett_referral_fee,
     mt.transaction_date
 FROM monthly_transactions mt
          JOIN branches b ON mt.branch_id = b.id
