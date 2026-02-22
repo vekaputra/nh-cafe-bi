@@ -20,9 +20,9 @@
         
         #result-container {
             margin-top: 2rem;
-            padding: 1rem;
+            padding: 0 1rem;
             border: 1px solid #ccc;
-            white-space: pre-wrap;
+            white-space: pre-line;
             font-family: monospace;
             background-color: #f9f9f9;
             max-height: 500px;
@@ -93,7 +93,6 @@
     const showBtn = document.querySelector("#show-btn");
     const downloadBtn = document.querySelector("#download-btn");
     const resultContent = document.querySelector("#result-content");
-    const resultContainer = document.querySelector("#result-container");
 
     showBtn.onclick = async () => {
         const val = monthYearSelect.value;
