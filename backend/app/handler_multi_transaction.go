@@ -72,7 +72,7 @@ CASE r.bank_name
 WHEN 'BCA' THEN SUM(rt.nett_referral_fee)
 ELSE SUM(rt.nett_referral_fee) - 2900 -- Apply fee reduction for non-BCA
 END AS amount,
-DATE_FORMAT(DATE_ADD(?, INTERVAL 7 HOUR), '%Y%m%d') AS eff_date,
+DATE_FORMAT(DATE_ADD(?, INTERVAL 7 HOUR), '%%Y%%m%%d') AS eff_date,
 b.bank_code AS bank_code,
 b.bank_name AS bank_name,
 r.name AS rec_name,
