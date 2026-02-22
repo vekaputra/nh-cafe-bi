@@ -39,6 +39,7 @@ func Serve() {
 		r.Post("/upload-csv", UploadCSVHandler)
 		r.Post("/assign-referral", AssignReferralHandler)
 		r.Post("/add-payment", AddPaymentHandler)
+		r.Get("/bca-multi-tx", MultiTransactionHandler)
 	})
 	r.Route("/page", func(r chi.Router) {
 		r.Get("/{page}", PageHandler)

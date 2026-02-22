@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NHKorindo Cafe - Multi Transaction</title>
+    <link rel="stylesheet" href="{{.BaseURL}}/view/mvp.css">
+    <link rel="stylesheet" href="{{.BaseURL}}/view/style.css">
+    <style>
+        label {
+            width: 90px;
+        }
+
+        select {
+            width: 340px;
+        }
+
+        form {
+            margin-top: 1rem;
+        }
+        
+        #result-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f9f9f9;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="{{.BaseURL}}/page/upload-csv">Upload CSV</a></li>
+            <li><a href="{{.BaseURL}}/page/upload-approval">Approve Uploads</a></li>
+            <li><a href="{{.BaseURL}}/page/assign-referral">Assign Referral</a></li>
+            <li><a href="{{.BaseURL}}/page/add-payment">Add Payment</a></li>
+            <li><a href="{{.BaseURL}}/page/multi-transaction">Multi Transaction</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <section>
+        <form id="form">
+            <div>
+                <label for="month_year">Month Year:</label>
+                <select id="month_year" name="month_year">
+                    <!-- Options will be populated by JS -->
+                </select>
+            </div>
+            <div class="actions">
+                <button type="button" id="show-btn">Show</button>
+                <button type="button" id="download-btn">Download .txt</button>
+            </div>
+        </form>
+    </section>
+    
+    <div id="result-container" style="display: none;">
+        <h3>Result:</h3>
+        <div id="result-content"></div>
+    </div>
+</main>
+<script>
+    const monthYearSelect = document.querySelector("#month_year");
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    const today = new Date();
+    // If today is February 2026, the last month should be January 2026.
+    // So we start from the previous month.
+    for (let i = 1; i <= 12; i++) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const year = d.getFullYear();
+        const monthName = monthNames[d.getMonth()];
+        
+        const option = document.createElement("option");
+        option.value = `${year}-${month}`;
+        option.textContent = `${monthName} ${year}`;
+        monthYearSelect.appendChild(option);
+    }
+
+    const showBtn = document.querySelector("#show-btn");
+    const downloadBtn = document.querySelector("#download-btn");
+    const resultContent = document.querySelector("#result-content");
+    const resultContainer = document.querySelector("#result-container");
+
+    showBtn.onclick = async () => {
+        const val = monthYearSelect.value;
+        const [year, month] = val.split("-");
+        const url = `{{.BaseURL}}/v1/bca-multi-tx?month=${month}&year=${year}`;
+
+        try {
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (response.ok) {
+                resultContainer.style.display = "block";
+                resultContent.textContent = result.result;
+            } else {
+                window.alert(`${response.status} - ${result.message}`);
+            }
+        } catch (error) {
+            window.alert(error);
+        }
+    };
+
+    downloadBtn.onclick = () => {
+        const val = monthYearSelect.value;
+        const [year, month] = val.split("-");
+        window.location.href = `{{.BaseURL}}/v1/bca-multi-tx?month=${month}&year=${year}&download=true`;
+    };
+</script>
+</body>
+</html>
