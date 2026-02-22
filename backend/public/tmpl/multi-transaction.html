@@ -52,7 +52,7 @@
     <section>
         <form id="form">
             <div>
-                <label for="month_year">Month Year:</label>
+                <label for="month_year">Date:</label>
                 <select id="month_year" name="month_year">
                     <!-- Options will be populated by JS -->
                 </select>
@@ -64,9 +64,8 @@
         </form>
     </section>
     
-    <div id="result-container" style="display: none;">
-        <h3>Result:</h3>
-        <div id="result-content"></div>
+    <div id="result-container">
+        <div id="result-content">Loading...</div>
     </div>
 </main>
 <script>
@@ -106,7 +105,6 @@
             const result = await response.json();
 
             if (response.ok) {
-                resultContainer.style.display = "block";
                 resultContent.textContent = result.result;
             } else {
                 window.alert(`${response.status} - ${result.message}`);
