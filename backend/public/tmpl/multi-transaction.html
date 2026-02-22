@@ -70,6 +70,7 @@
     </div>
 </main>
 <script>
+    const baseURL = "{{.BaseURL}}";
     const monthYearSelect = document.querySelector("#month_year");
     const monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -98,7 +99,7 @@
     showBtn.onclick = async () => {
         const val = monthYearSelect.value;
         const [year, month] = val.split("-");
-        const url = `{{.BaseURL}}/v1/bca-multi-tx?month=${month}&year=${year}`;
+        const url = `${baseURL}/v1/bca-multi-tx?month=${month}&year=${year}`;
 
         try {
             const response = await fetch(url);
@@ -118,7 +119,7 @@
     downloadBtn.onclick = () => {
         const val = monthYearSelect.value;
         const [year, month] = val.split("-");
-        window.location.href = `{{.BaseURL}}/v1/bca-multi-tx?month=${month}&year=${year}&download=true`;
+        window.location.href = `${baseURL}/v1/bca-multi-tx?month=${month}&year=${year}&download=true`;
     };
 </script>
 </body>
