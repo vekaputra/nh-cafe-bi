@@ -173,7 +173,7 @@ transaction_lines;
 
 	var lines []string
 	// Parameters: 1. eff_date, 2. DATE_FORMAT, 3. TIMESTAMPDIFF, 4. Header DATE_FORMAT
-	err = db.Select(&lines, finalSQL, targetDateStr, targetDateStr, targetDateStr, targetDateStr, targetDateStr)
+	err = db.Select(&lines, finalSQL, targetDateStr, targetDateStr, targetDateStr, targetDateStr)
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusInternalServerError)
 		return
