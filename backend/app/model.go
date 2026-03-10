@@ -43,6 +43,14 @@ type Info struct {
 	ReferralFees     []ReferralFee `json:"referral_fees"`
 }
 
+type Referral struct {
+	ID          int64     `json:"id" db:"id"`
+	Name        string    `json:"name" db:"name"`
+	BankAccount *string   `json:"bank_account" db:"bank_account"`
+	BankName    *string   `json:"bank_name" db:"bank_name"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+}
+
 type Branch struct {
 	ID         int64     `json:"id" db:"id"`
 	BranchCode string    `json:"branch_code" db:"branch_code"`
@@ -109,6 +117,7 @@ type ReferralFee struct {
 	IsRootReferral bool           `json:"is_root_referral" db:"is_root_referral"`
 	AssignedAt     string         `json:"assigned_at" db:"assigned_at"`
 	CreatedAt      time.Time      `json:"created_at" db:"created_at"`
+	BranchName     string         `json:"branch_name" db:"branch_name"`
 	Children       []*ReferralFee `json:"children,omitempty"`
 }
 

@@ -6,73 +6,16 @@
     <link rel="stylesheet" href="{{.BaseURL}}/view/mvp.css">
     <link rel="stylesheet" href="{{.BaseURL}}/view/style.css">
     <style>
-        .tree-explorer {
-            list-style: none;
-            padding-left: 0;
-            margin-top: 20px;
+        label {
+            width: 120px;
         }
-        .tree-explorer ul {
-            list-style: none;
-            padding-left: 20px;
-            border-left: 1px dashed #ccc;
-            margin-left: 10px;
-        }
-        .tree-explorer li {
-            margin: 5px 0;
-            position: relative;
-        }
-        .node-content {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .node-content:hover {
-            background-color: #f0f0f0;
-        }
-        .toggle-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-            text-align: center;
-            margin-right: 5px;
-            font-family: monospace;
-            font-weight: bold;
-            color: #666;
-        }
-        .node-details {
-            margin-left: 5px;
-        }
-        .node-code {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .node-fee {
-            font-size: 0.85em;
-            color: #7f8c8d;
-            margin-left: 10px;
-        }
-        .collapsed ul {
-            display: none;
-        }
-        .leaf .toggle-icon {
-            visibility: hidden;
-        }
-        .filter-section {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+
         select {
-            padding: 8px;
-            min-width: 300px;
+            width: 340px;
+        }
+
+        form {
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -91,17 +34,21 @@
 </header>
 <main>
     <section>
-        <h3>Referral Tree Explorer</h3>
-        
-        <div class="filter-section">
-            <label for="referral-select">Select Referral (T_ codes only):</label>
-            <select id="referral-select">
-                <option value="">-- Select a Referral --</option>
-            </select>
-            <button onclick="applyFilter()">Show Tree</button>
-            <button class="bg-red" onclick="resetFilter()">Reset</button>
-        </div>
+        <form id="form">
+            <div>
+                <label for="referral-select">Referral:</label>
+                <select id="referral-select" name="referral_id">
+                    <option value="">-- Choose Referral --</option>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="button" onclick="applyFilter()">Show Tree</button>
+                <button type="button" class="bg-red" onclick="resetFilter()">Reset</button>
+            </div>
+        </form>
+    </section>
 
+    <section>
         <div id="tree-display">
             <p>Please select a referral to view its hierarchy.</p>
         </div>
@@ -109,36 +56,15 @@
 </main>
 
 <script>
-    const baseURL = "{{.BaseURL}}";
-    let allReferrals = [];
-
     async function init() {
         try {
-            // Fetch initial data to populate the dropdown
-            const response = await fetch(`${baseURL}/v1/referral-tree`);
+            // Fetch referrals for the dropdown
+            const response = await fetch("/v1/referrals");
             const data = await response.json();
-            
-            // Flatten the tree to get all available referrals for the dropdown
-            allReferrals = flattenTree(data);
-            populateDropdown(allReferrals);
+            populateDropdown(data);
         } catch (error) {
             console.error("Error initializing:", error);
         }
-    }
-
-    function flattenTree(nodes) {
-        let result = [];
-        nodes.forEach(node => {
-            result.push({
-                id: node.id,
-                label: `${node.display_code || node.code} (${node.sharing_fee}%)`
-            });
-            if (node.children && node.children.length > 0) {
-                result = result.concat(flattenTree(node.children));
-            }
-        });
-        // Sort alphabetically
-        return result.sort((a, b) => a.label.localeCompare(b.label));
     }
 
     function populateDropdown(referrals) {
@@ -146,7 +72,7 @@
         referrals.forEach(ref => {
             const option = document.createElement('option');
             option.value = ref.id;
-            option.textContent = ref.label;
+            option.textContent = ref.name;
             select.appendChild(option);
         });
     }
@@ -159,7 +85,7 @@
         display.innerHTML = '<p>Loading tree...</p>';
 
         try {
-            const response = await fetch(`${baseURL}/v1/referral-tree?referral_id=${referralId}`);
+            const response = await fetch(`/v1/referral-tree?referral_id=${referralId}`);
             const data = await response.json();
             renderTree(data);
         } catch (error) {
@@ -182,7 +108,6 @@
         }
 
         const ul = document.createElement('ul');
-        ul.className = 'tree-explorer';
         roots.forEach(root => {
             ul.appendChild(createNodeElement(root));
         });
@@ -191,39 +116,17 @@
 
     function createNodeElement(node) {
         const li = document.createElement('li');
-        const hasChildren = node.children && node.children.length > 0;
         
-        if (!hasChildren) {
-            li.className = 'leaf';
-        }
+        // Format: {branch_name} - {display_code} - {sharing_fee} - {assigned_at}
+        const displayText = `${node.branch_name} - ${node.display_code || node.code} - ${node.sharing_fee}% - ${node.assigned_at}`;
+        li.textContent = displayText;
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'node-content';
-        
-        const toggleIcon = document.createElement('span');
-        toggleIcon.className = 'toggle-icon';
-        toggleIcon.textContent = '▼';
-        contentDiv.appendChild(toggleIcon);
-
-        const detailsSpan = document.createElement('span');
-        detailsSpan.className = 'node-details';
-        detailsSpan.innerHTML = `<span class="node-code">${node.display_code || node.code}</span><span class="node-fee">Fee: ${node.sharing_fee}%</span>`;
-        contentDiv.appendChild(detailsSpan);
-
-        li.appendChild(contentDiv);
-
-        if (hasChildren) {
+        if (node.children && node.children.length > 0) {
             const childrenUl = document.createElement('ul');
             node.children.forEach(child => {
                 childrenUl.appendChild(createNodeElement(child));
             });
             li.appendChild(childrenUl);
-
-            contentDiv.onclick = (e) => {
-                e.stopPropagation();
-                li.classList.toggle('collapsed');
-                toggleIcon.textContent = li.classList.contains('collapsed') ? '▶' : '▼';
-            };
         }
 
         return li;

@@ -9,7 +9,15 @@ func GetReferralTreeHandler(w http.ResponseWriter, r *http.Request) {
 	db := GetDB()
 
 	var allFees []ReferralFee
-	query := `SELECT id, branch_id, referral_id, parent_id, code, display_code, sharing_fee, is_handle_tax, is_root_referral, assigned_at, created_at FROM referral_fees WHERE code LIKE 'T_%' ORDER BY id ASC`
+	query := `
+		SELECT 
+			rf.id, rf.branch_id, rf.referral_id, rf.parent_id, rf.code, rf.display_code, 
+			rf.sharing_fee, rf.is_handle_tax, rf.is_root_referral, rf.assigned_at, rf.created_at,
+			b.short_name AS branch_name
+		FROM referral_fees rf
+		JOIN branches b ON rf.branch_id = b.id
+		WHERE rf.code LIKE 'T_%' 
+		ORDER BY rf.id ASC`
 	err := db.Select(&allFees, query)
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusInternalServerError)
