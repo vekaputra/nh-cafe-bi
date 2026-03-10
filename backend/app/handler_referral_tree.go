@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -8,7 +9,7 @@ func GetReferralTreeHandler(w http.ResponseWriter, r *http.Request) {
 	db := GetDB()
 
 	var allFees []ReferralFee
-	query := `SELECT id, branch_id, referral_id, parent_id, code, display_code, sharing_fee, is_handle_tax, is_root_referral, assigned_at, created_at FROM referral_fees ORDER BY id ASC`
+	query := `SELECT id, branch_id, referral_id, parent_id, code, display_code, sharing_fee, is_handle_tax, is_root_referral, assigned_at, created_at FROM referral_fees WHERE code LIKE 'T_%' ORDER BY id ASC`
 	err := db.Select(&allFees, query)
 	if err != nil {
 		ReturnMessage(w, err.Error(), http.StatusInternalServerError)
@@ -21,6 +22,7 @@ func GetReferralTreeHandler(w http.ResponseWriter, r *http.Request) {
 		feeMap[allFees[i].ID] = &allFees[i]
 	}
 
+	// Link children to parents
 	var roots []*ReferralFee
 	for i := range allFees {
 		fee := &allFees[i]
@@ -36,5 +38,35 @@ func GetReferralTreeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Optional filtering by a specific referral ID
+	referralIDStr := r.URL.Query().Get("referral_id")
+	if referralIDStr != "" {
+		var targetID int64
+		_, err := fmt.Sscanf(referralIDStr, "%d", &targetID)
+		if err == nil {
+			// Find the tree that contains this ID
+			var filteredRoots []*ReferralFee
+			for _, root := range roots {
+				if containsID(root, targetID) {
+					filteredRoots = append(filteredRoots, root)
+					break // Assuming one root contains one ID in a tree structure
+				}
+			}
+			roots = filteredRoots
+		}
+	}
+
 	ReturnJson(w, roots, http.StatusOK)
+}
+
+func containsID(node *ReferralFee, id int64) bool {
+	if node.ID == id {
+		return true
+	}
+	for _, child := range node.Children {
+		if containsID(child, id) {
+			return true
+		}
+	}
+	return false
 }

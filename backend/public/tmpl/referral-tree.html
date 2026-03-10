@@ -6,119 +6,74 @@
     <link rel="stylesheet" href="{{.BaseURL}}/view/mvp.css">
     <link rel="stylesheet" href="{{.BaseURL}}/view/style.css">
     <style>
-        .tree-container {
-            margin: 20px;
-            font-family: sans-serif;
+        .tree-explorer {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 20px;
         }
-        .tree ul {
-            padding-top: 20px; position: relative;
-            transition: all 0.5s;
-            -webkit-transition: all 0.5s;
-            -moz-transition: all 0.5s;
-            display: flex;
+        .tree-explorer ul {
+            list-style: none;
+            padding-left: 20px;
+            border-left: 1px dashed #ccc;
+            margin-left: 10px;
         }
-        .tree li {
-            float: left; text-align: center;
-            list-style-type: none;
+        .tree-explorer li {
+            margin: 5px 0;
             position: relative;
-            padding: 20px 5px 0 5px;
-            transition: all 0.5s;
-            -webkit-transition: all 0.5s;
-            -moz-transition: all 0.5s;
         }
-        .tree li::before, .tree li::after {
-            content: '';
-            position: absolute; top: 0; right: 50%;
-            border-top: 1px solid #ccc;
-            width: 50%; height: 20px;
+        .node-content {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        .tree li::after {
-            right: auto; left: 50%;
-            border-left: 1px solid #ccc;
+        .node-content:hover {
+            background-color: #f0f0f0;
         }
-        .tree li:only-child::after, .tree li:only-child::before {
+        .toggle-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            line-height: 16px;
+            text-align: center;
+            margin-right: 5px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #666;
+        }
+        .node-details {
+            margin-left: 5px;
+        }
+        .node-code {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .node-fee {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-left: 10px;
+        }
+        .collapsed ul {
             display: none;
         }
-        .tree li:only-child { padding-top: 0; }
-        .tree li:first-child::before, .tree li:last-child::after {
-            border: 0 none;
+        .leaf .toggle-icon {
+            visibility: hidden;
         }
-        .tree li:last-child::before {
-            border-right: 1px solid #ccc;
-            border-radius: 0 5px 0 0;
-            -webkit-border-radius: 0 5px 0 0;
-            -moz-border-radius: 0 5px 0 0;
+        .filter-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .tree li:first-child::after {
-            border-radius: 5px 0 0 0;
-            -webkit-border-radius: 5px 0 0 0;
-            -moz-border-radius: 5px 0 0 0;
+        select {
+            padding: 8px;
+            min-width: 300px;
         }
-        .tree ul ul::before {
-            content: '';
-            position: absolute; top: 0; left: 50%;
-            border-left: 1px solid #ccc;
-            width: 0; height: 20px;
-        }
-        .tree li div {
-            border: 1px solid #ccc;
-            padding: 5px 10px;
-            text-decoration: none;
-            color: #666;
-            font-family: arial, verdana, tahoma;
-            font-size: 11px;
-            display: inline-block;
-            border-radius: 5px;
-            -webkit-border-radius: 5px;
-            -moz-border-radius: 5px;
-            transition: all 0.5s;
-            -webkit-transition: all 0.5s;
-            -moz-transition: all 0.5s;
-            background: white;
-        }
-        .tree li div:hover, .tree li div:hover+ul li div {
-            background: #c8e4f8; color: #000; border: 1px solid #94a0b4;
-        }
-        .tree li div:hover+ul li::after, 
-        .tree li div:hover+ul li::before, 
-        .tree li div:hover+ul::before, 
-        .tree li div:hover+ul ul::before {
-            border-color:  #94a0b4;
-        }
-
-        /* Vertical Tree Style Alternative if horizontal is too wide */
-        .vertical-tree ul {
-            padding-left: 20px;
-            list-style: none;
-        }
-        .vertical-tree li {
-            position: relative;
-            padding: 5px 0;
-        }
-        .vertical-tree li::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -10px;
-            border-left: 1px solid #ccc;
-            height: 100%;
-        }
-        .vertical-tree li::after {
-            content: "";
-            position: absolute;
-            top: 15px;
-            left: -10px;
-            border-top: 1px solid #ccc;
-            width: 10px;
-        }
-        .vertical-tree li:last-child::before {
-            height: 15px;
-        }
-        .node-info {
-            text-align: left;
-        }
-        .node-code { font-weight: bold; }
-        .node-fee { color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -136,34 +91,97 @@
 </header>
 <main>
     <section>
-        <h3>Referral Tree</h3>
-        <div id="tree-display" class="vertical-tree">
-            <!-- Tree will be rendered here -->
-            Loading...
+        <h3>Referral Tree Explorer</h3>
+        
+        <div class="filter-section">
+            <label for="referral-select">Select Referral (T_ codes only):</label>
+            <select id="referral-select">
+                <option value="">-- Select a Referral --</option>
+            </select>
+            <button onclick="applyFilter()">Show Tree</button>
+            <button class="bg-red" onclick="resetFilter()">Reset</button>
+        </div>
+
+        <div id="tree-display">
+            <p>Please select a referral to view its hierarchy.</p>
         </div>
     </section>
 </main>
 
 <script>
-    async function fetchTree() {
+    let allReferrals = [];
+
+    async function init() {
         try {
+            // Fetch initial data to populate the dropdown
             const response = await fetch("{{.BaseURL}}/v1/referral-tree");
+            const data = await response.json();
+            
+            // Flatten the tree to get all available referrals for the dropdown
+            allReferrals = flattenTree(data);
+            populateDropdown(allReferrals);
+        } catch (error) {
+            console.error("Error initializing:", error);
+        }
+    }
+
+    function flattenTree(nodes) {
+        let result = [];
+        nodes.forEach(node => {
+            result.push({
+                id: node.id,
+                label: `${node.display_code || node.code} (${node.sharing_fee}%)`
+            });
+            if (node.children && node.children.length > 0) {
+                result = result.concat(flattenTree(node.children));
+            }
+        });
+        // Sort alphabetically
+        return result.sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    function populateDropdown(referrals) {
+        const select = document.getElementById('referral-select');
+        referrals.forEach(ref => {
+            const option = document.createElement('option');
+            option.value = ref.id;
+            option.textContent = ref.label;
+            select.appendChild(option);
+        });
+    }
+
+    async function applyFilter() {
+        const referralId = document.getElementById('referral-select').value;
+        if (!referralId) return;
+
+        const display = document.getElementById('tree-display');
+        display.innerHTML = '<p>Loading tree...</p>';
+
+        try {
+            const response = await fetch(`{{.BaseURL}}/v1/referral-tree?referral_id=${referralId}`);
             const data = await response.json();
             renderTree(data);
         } catch (error) {
-            document.getElementById('tree-display').innerText = "Error loading tree: " + error;
+            display.innerText = "Error loading tree: " + error;
         }
+    }
+
+    function resetFilter() {
+        document.getElementById('referral-select').value = "";
+        const display = document.getElementById('tree-display');
+        display.innerHTML = '<p>Please select a referral to view its hierarchy.</p>';
     }
 
     function renderTree(roots) {
         const container = document.getElementById('tree-display');
         container.innerHTML = '';
         if (!roots || roots.length === 0) {
-            container.innerText = "No referral fees found.";
+            container.innerText = "No matching referral tree found.";
             return;
         }
 
         const ul = document.createElement('ul');
+        ul.className = 'tree-explorer';
         roots.forEach(root => {
             ul.appendChild(createNodeElement(root));
         });
@@ -172,27 +190,45 @@
 
     function createNodeElement(node) {
         const li = document.createElement('li');
-        const div = document.createElement('div');
-        div.className = 'node-info';
+        const hasChildren = node.children && node.children.length > 0;
         
-        let content = `<span class="node-code">${node.display_code || node.code}</span>`;
-        if (node.sharing_fee) {
-            content += `<br><span class="node-fee">Fee: ${node.sharing_fee}%</span>`;
+        if (!hasChildren) {
+            li.className = 'leaf';
         }
-        div.innerHTML = content;
-        li.appendChild(div);
 
-        if (node.children && node.children.length > 0) {
-            const ul = document.createElement('ul');
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'node-content';
+        
+        const toggleIcon = document.createElement('span');
+        toggleIcon.className = 'toggle-icon';
+        toggleIcon.textContent = '▼';
+        contentDiv.appendChild(toggleIcon);
+
+        const detailsSpan = document.createElement('span');
+        detailsSpan.className = 'node-details';
+        detailsSpan.innerHTML = `<span class="node-code">${node.display_code || node.code}</span><span class="node-fee">Fee: ${node.sharing_fee}%</span>`;
+        contentDiv.appendChild(detailsSpan);
+
+        li.appendChild(contentDiv);
+
+        if (hasChildren) {
+            const childrenUl = document.createElement('ul');
             node.children.forEach(child => {
-                ul.appendChild(createNodeElement(child));
+                childrenUl.appendChild(createNodeElement(child));
             });
-            li.appendChild(ul);
+            li.appendChild(childrenUl);
+
+            contentDiv.onclick = (e) => {
+                e.stopPropagation();
+                li.classList.toggle('collapsed');
+                toggleIcon.textContent = li.classList.contains('collapsed') ? '▶' : '▼';
+            };
         }
+
         return li;
     }
 
-    fetchTree();
+    init();
 </script>
 </body>
 </html>
