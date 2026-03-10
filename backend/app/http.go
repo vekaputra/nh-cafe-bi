@@ -40,6 +40,7 @@ func Serve() {
 		r.Post("/assign-referral", AssignReferralHandler)
 		r.Post("/add-payment", AddPaymentHandler)
 		r.Get("/bca-multi-tx", MultiTransactionHandler)
+		r.Get("/referral-tree", GetReferralTreeHandler)
 	})
 	r.Route("/page", func(r chi.Router) {
 		r.Get("/{page}", PageHandler)

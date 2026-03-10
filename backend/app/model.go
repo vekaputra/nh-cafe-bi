@@ -98,17 +98,18 @@ type MonthlyTransaction struct {
 }
 
 type ReferralFee struct {
-	ID             int64     `json:"id" db:"id"`
-	BranchID       int64     `json:"branch_id" db:"branch_id"`
-	ReferralID     int64     `json:"referral_id" db:"referral_id"`
-	ParentID       *int64    `json:"parent_id" db:"parent_id"`
-	Code           string    `json:"code" db:"code"`
-	DisplayCode    string    `json:"display_code" db:"display_code"`
-	SharingFee     float64   `json:"sharing_fee" db:"sharing_fee"`
-	IsHandleTax    bool      `json:"is_handle_tax" db:"is_handle_tax"`
-	IsRootReferral bool      `json:"is_root_referral" db:"is_root_referral"`
-	AssignedAt     string    `json:"assigned_at" db:"assigned_at"`
-	CreatedAt      time.Time `json:"created_at" db:"created_at"`
+	ID             int64          `json:"id" db:"id"`
+	BranchID       int64          `json:"branch_id" db:"branch_id"`
+	ReferralID     int64          `json:"referral_id" db:"referral_id"`
+	ParentID       *int64         `json:"parent_id" db:"parent_id"`
+	Code           string         `json:"code" db:"code"`
+	DisplayCode    string         `json:"display_code" db:"display_code"`
+	SharingFee     float64        `json:"sharing_fee" db:"sharing_fee"`
+	IsHandleTax    bool           `json:"is_handle_tax" db:"is_handle_tax"`
+	IsRootReferral bool           `json:"is_root_referral" db:"is_root_referral"`
+	AssignedAt     string         `json:"assigned_at" db:"assigned_at"`
+	CreatedAt      time.Time      `json:"created_at" db:"created_at"`
+	Children       []*ReferralFee `json:"children,omitempty"`
 }
 
 type FreeCustomer struct {
