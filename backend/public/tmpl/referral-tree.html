@@ -109,12 +109,13 @@
 </main>
 
 <script>
+    const baseURL = "{{.BaseURL}}";
     let allReferrals = [];
 
     async function init() {
         try {
             // Fetch initial data to populate the dropdown
-            const response = await fetch("{{.BaseURL}}/v1/referral-tree");
+            const response = await fetch(`${baseURL}/v1/referral-tree`);
             const data = await response.json();
             
             // Flatten the tree to get all available referrals for the dropdown
@@ -158,7 +159,7 @@
         display.innerHTML = '<p>Loading tree...</p>';
 
         try {
-            const response = await fetch(`{{.BaseURL}}/v1/referral-tree?referral_id=${referralId}`);
+            const response = await fetch(`${baseURL}/v1/referral-tree?referral_id=${referralId}`);
             const data = await response.json();
             renderTree(data);
         } catch (error) {
