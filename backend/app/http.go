@@ -37,6 +37,7 @@ func Serve() {
 		r.Get("/file-upload", GetUploadHandler)
 		r.Post("/file-upload/confirm", ConfirmUploadHandler)
 		r.Post("/upload-csv", UploadCSVHandler)
+		r.Post("/upload-spklu", UploadSPKLUHandler)
 		r.Post("/assign-referral", AssignReferralHandler)
 		r.Post("/add-payment", AddPaymentHandler)
 		r.Get("/bca-multi-tx", MultiTransactionHandler)

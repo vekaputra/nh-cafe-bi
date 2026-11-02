@@ -37,6 +37,32 @@ type Transaction struct {
 	TotalFee     int64  `json:"total_fee"`
 }
 
+// SPKLUSession keeps amounts as the report's decimal text so DECIMAL columns stay exact
+type SPKLUSession struct {
+	StationName     string
+	EVSEName        string
+	ConnectorName   string
+	ConnectorID     int64     `db:"connector_id"`
+	StartedAt       time.Time `db:"started_at"`
+	StoppedAt       time.Time `db:"stopped_at"`
+	Kwh             string    `db:"kwh"`
+	ElectricityCost string    `db:"electricity_cost"`
+	PlnPpj          string    `db:"pln_ppj"`
+	HhePpj          string    `db:"hhe_ppj"`
+	PlatformShare   string    `db:"platform_share"`
+	ChargerShare    string    `db:"charger_share"`
+	LandShare       string    `db:"land_share"`
+	SharingRevenue  string    `db:"sharing_revenue"`
+	PlnPpn          string    `db:"pln_ppn"`
+	HhePpn          string    `db:"hhe_ppn"`
+	TotalPpn        string    `db:"total_ppn"`
+	StampDuty       string    `db:"stamp_duty"`
+	PlnRevenue      string    `db:"pln_revenue"`
+	HheRevenue      string    `db:"hhe_revenue"`
+	AdminFee        string    `db:"admin_fee"`
+	TotalRevenue    string    `db:"total_revenue"`
+}
+
 type Info struct {
 	Branches         []Branch      `json:"branches"`
 	TransactionDates []string      `json:"transaction_dates"`
